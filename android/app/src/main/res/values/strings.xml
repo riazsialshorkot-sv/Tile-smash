@@ -1,0 +1,17 @@
+<resources>
+    <string name="app_name">Tile Smash</string>
+    <string name="level_label">Level %1$d</string>
+    <string name="score_label">Score: %1$d</string>
+    <string name="moves_label">Moves: %1$d</string>
+    <string name="target_label">Target: %1$d</string>
+    <string name="game_paused">GAME PAUSED</string>
+    <string name="game_over">GAME OVER</string>
+    <string name="level_complete">LEVEL COMPLETE!</string>
+    <string name="restart">Restart</string>
+    <string name="hint">Hint</string>
+    <string name="sound">Sound</string>
+    <string name="pause">Pause</string>
+    <string name="resume">Resume</string>
+    <string name="next_level">Next Level</string>
+    <string name="try_again">Try Again</string>
+</resources>

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="purple_80">#D0BCFF</color>
+    <color name="purple_grey_80">#CCC2DC</color>
+    <color name="pink_80">#EFB8C8</color>
+
+    <color name="purple_40">#6650a4</color>
+    <color name="purple_grey_40">#625b71</color>
+    <color name="pink_40">#7D5260</color>
+
+    <color name="slate_950">#020617</color>
+    <color name="slate_900">#0F172A</color>
+    <color name="slate_800">#1E293B</color>
+
+    <color name="ruby_red">#E11D48</color>
+    <color name="amber_orange">#F59E0B</color>
+    <color name="topaz_yellow">#EAB308</color>
+    <color name="emerald_green">#10B981</color>
+    <color name="sapphire_blue">#0EA5E9</color>
+    <color name="amethyst_purple">#A855F7</color>
+</resources>

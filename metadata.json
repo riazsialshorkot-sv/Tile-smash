@@ -1,0 +1,6 @@
+{
+  "name": "Tile Smash",
+  "description": "A polished Match-3 tile smashing puzzle game featuring 8x8 cascades, Line Blasts, Color Bombs, sound effects, and progressive levels.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

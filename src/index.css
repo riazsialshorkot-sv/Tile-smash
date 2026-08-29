@@ -1,0 +1,63 @@
+@import "tailwindcss";
+
+@layer base {
+  body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  }
+  
+  .font-game {
+    font-family: 'Fredoka', 'Plus Jakarta Sans', cursive, sans-serif;
+  }
+}
+
+@keyframes float-up {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, 0) scale(0.6);
+  }
+  20% {
+    opacity: 1;
+    transform: translate(-50%, -10px) scale(1.2);
+  }
+  100% {
+    opacity: 0;
+    transform: translate(-50%, -35px) scale(1);
+  }
+}
+
+@keyframes pulse-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 6px rgba(255, 255, 255, 0.7));
+    transform: scale(1);
+  }
+  50% {
+    filter: drop-shadow(0 0 14px rgba(255, 255, 255, 1));
+    transform: scale(1.05);
+  }
+}
+
+@keyframes rainbow-glow {
+  0% { filter: drop-shadow(0 0 8px #ff0055); }
+  25% { filter: drop-shadow(0 0 8px #ffaa00); }
+  50% { filter: drop-shadow(0 0 8px #00ff88); }
+  75% { filter: drop-shadow(0 0 8px #00aaff); }
+  100% { filter: drop-shadow(0 0 8px #ff0055); }
+}
+
+@keyframes hint-bounce {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-4px) scale(1.08); }
+}
+
+.animate-hint {
+  animation: hint-bounce 0.8s ease-in-out infinite;
+}
+
+.animate-special-pulse {
+  animation: pulse-glow 1.5s ease-in-out infinite;
+}
+
+.animate-rainbow {
+  animation: rainbow-glow 2s linear infinite;
+}
+

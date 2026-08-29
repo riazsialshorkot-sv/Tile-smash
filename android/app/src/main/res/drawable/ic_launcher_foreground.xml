@@ -1,0 +1,13 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    <!-- Gem Star Logo -->
+    <path
+        android:fillColor="#F59E0B"
+        android:pathData="M54,22L62,44L85,47L68,63L73,86L54,74L35,86L40,63L23,47L46,44Z" />
+    <path
+        android:fillColor="#FDE68A"
+        android:pathData="M54,30L60,46L76,48L64,60L67,76L54,68L41,76L44,60L32,48L48,46Z" />
+</vector>
