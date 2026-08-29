@@ -1,10 +1,11 @@
 import React from 'react';
-import { Play, RotateCcw, Volume2, VolumeX, ArrowRight, Trophy, Star, Sparkles } from 'lucide-react';
+import { Play, RotateCcw, Volume2, VolumeX, ArrowRight, Trophy, Star, Sparkles, Home } from 'lucide-react';
 
 interface PauseDialogProps {
   isOpen: boolean;
   onResume: () => void;
   onRestart: () => void;
+  onHome?: () => void;
   onToggleSound: () => void;
   soundEnabled: boolean;
 }
@@ -13,6 +14,7 @@ export const PauseDialog: React.FC<PauseDialogProps> = ({
   isOpen,
   onResume,
   onRestart,
+  onHome,
   onToggleSound,
   soundEnabled,
 }) => {
@@ -36,7 +38,7 @@ export const PauseDialog: React.FC<PauseDialogProps> = ({
           <button
             id="btn-pause-resume"
             onClick={onResume}
-            className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/40 active:scale-95 transition-all"
+            className="w-full py-3 px-4 rounded-xl bg-gradient-to-r from-emerald-500 to-teal-600 hover:from-emerald-400 hover:to-teal-500 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/40 active:scale-95 transition-all cursor-pointer"
           >
             <Play className="w-4 h-4 fill-white" />
             Resume Game
@@ -45,16 +47,27 @@ export const PauseDialog: React.FC<PauseDialogProps> = ({
           <button
             id="btn-pause-restart"
             onClick={onRestart}
-            className="w-full py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-semibold text-sm flex items-center justify-center gap-2 active:scale-95 transition-all"
+            className="w-full py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-semibold text-sm flex items-center justify-center gap-2 active:scale-95 transition-all cursor-pointer"
           >
             <RotateCcw className="w-4 h-4 text-amber-400" />
             Restart Level
           </button>
 
+          {onHome && (
+            <button
+              id="btn-pause-home"
+              onClick={onHome}
+              className="w-full py-2.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-sky-300 font-semibold text-xs flex items-center justify-center gap-2 active:scale-95 transition-all cursor-pointer"
+            >
+              <Home className="w-4 h-4 text-sky-400" />
+              Main Menu & Difficulty
+            </button>
+          )}
+
           <button
             id="btn-pause-sound"
             onClick={onToggleSound}
-            className="w-full py-2.5 px-4 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 text-slate-300 font-semibold text-xs flex items-center justify-center gap-2 transition-all"
+            className="w-full py-2.5 px-4 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 text-slate-300 font-semibold text-xs flex items-center justify-center gap-2 transition-all cursor-pointer"
           >
             {soundEnabled ? (
               <>
@@ -80,6 +93,7 @@ interface GameOverDialogProps {
   highScore: number;
   onTryAgain: () => void;
   onRestartLevel1: () => void;
+  onHome?: () => void;
 }
 
 export const GameOverDialog: React.FC<GameOverDialogProps> = ({
@@ -90,6 +104,7 @@ export const GameOverDialog: React.FC<GameOverDialogProps> = ({
   highScore,
   onTryAgain,
   onRestartLevel1,
+  onHome,
 }) => {
   if (!isOpen) return null;
 
@@ -132,16 +147,27 @@ export const GameOverDialog: React.FC<GameOverDialogProps> = ({
           <button
             id="btn-gameover-tryagain"
             onClick={onTryAgain}
-            className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-rose-600 hover:from-amber-400 hover:to-rose-500 text-white font-bold text-base flex items-center justify-center gap-2 shadow-lg shadow-rose-900/40 active:scale-95 transition-all"
+            className="w-full py-3.5 px-4 rounded-xl bg-gradient-to-r from-amber-500 to-rose-600 hover:from-amber-400 hover:to-rose-500 text-white font-bold text-base flex items-center justify-center gap-2 shadow-lg shadow-rose-900/40 active:scale-95 transition-all cursor-pointer"
           >
             <RotateCcw className="w-5 h-5" />
             Try Again
           </button>
 
+          {onHome && (
+            <button
+              id="btn-gameover-change-difficulty"
+              onClick={onHome}
+              className="w-full py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-sky-300 font-semibold text-xs transition-all active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
+            >
+              <Home className="w-4 h-4 text-sky-400" />
+              Main Menu / Change Difficulty
+            </button>
+          )}
+
           <button
             id="btn-gameover-home"
             onClick={onRestartLevel1}
-            className="w-full py-3 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 font-semibold text-xs transition-all active:scale-95"
+            className="w-full py-2.5 px-4 rounded-xl bg-slate-900/80 hover:bg-slate-800 text-slate-400 font-semibold text-xs transition-all active:scale-95 cursor-pointer"
           >
             Restart from Level 1
           </button>
@@ -159,6 +185,7 @@ interface LevelCompleteDialogProps {
   totalScore: number;
   onNextLevel: () => void;
   onReplay: () => void;
+  onHome?: () => void;
 }
 
 export const LevelCompleteDialog: React.FC<LevelCompleteDialogProps> = ({
@@ -169,6 +196,7 @@ export const LevelCompleteDialog: React.FC<LevelCompleteDialogProps> = ({
   totalScore,
   onNextLevel,
   onReplay,
+  onHome,
 }) => {
   if (!isOpen) return null;
 
@@ -217,7 +245,7 @@ export const LevelCompleteDialog: React.FC<LevelCompleteDialogProps> = ({
           <button
             id="btn-level-next"
             onClick={onNextLevel}
-            className="w-full py-4 px-4 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-400 hover:to-teal-400 text-white font-extrabold text-lg flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/50 active:scale-95 transition-all"
+            className="w-full py-4 px-4 rounded-2xl bg-gradient-to-r from-emerald-500 via-teal-500 to-emerald-600 hover:from-emerald-400 hover:to-teal-400 text-white font-extrabold text-lg flex items-center justify-center gap-2 shadow-lg shadow-emerald-900/50 active:scale-95 transition-all cursor-pointer"
           >
             <span>Next Level</span>
             <ArrowRight className="w-5 h-5" />
@@ -226,10 +254,20 @@ export const LevelCompleteDialog: React.FC<LevelCompleteDialogProps> = ({
           <button
             id="btn-level-replay"
             onClick={onReplay}
-            className="w-full py-2.5 px-4 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-300 font-semibold text-xs transition-all active:scale-95"
+            className="w-full py-2.5 px-4 rounded-xl bg-slate-800/80 hover:bg-slate-800 text-slate-300 font-semibold text-xs transition-all active:scale-95 cursor-pointer"
           >
             Replay Level {level}
           </button>
+
+          {onHome && (
+            <button
+              id="btn-level-home"
+              onClick={onHome}
+              className="w-full py-2 px-4 rounded-xl bg-slate-900/60 hover:bg-slate-800 text-slate-400 hover:text-white font-semibold text-xs transition-all active:scale-95 cursor-pointer"
+            >
+              Main Menu
+            </button>
+          )}
         </div>
       </div>
     </div>

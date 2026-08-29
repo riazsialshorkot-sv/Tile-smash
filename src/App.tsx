@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import confetti from 'canvas-confetti';
 import {
   Tile,
@@ -7,6 +7,8 @@ import {
   FloatingScore,
   SpecialTile,
   TileType,
+  DifficultyMode,
+  ShatterEvent,
 } from './types';
 import {
   BOARD_SIZE,
@@ -26,6 +28,8 @@ import { TopBar } from './components/TopBar';
 import { GameBoard } from './components/GameBoard';
 import { GameControls } from './components/GameControls';
 import { PauseDialog, GameOverDialog, LevelCompleteDialog } from './components/Dialogs';
+import { StartScreen } from './components/StartScreen';
+import { generateShatterShards } from './components/ShatterParticleOverlay';
 import { AndroidProjectViewer } from './components/AndroidProjectViewer';
 
 const STORAGE_KEY = 'tilesmash_game_data_v1';
@@ -51,10 +55,13 @@ export default function App() {
     }
 
     soundManager.enabled = savedSound;
+    const initialDifficulty: DifficultyMode = 'NORMAL';
     const initialLevel = 1;
-    const levelConfig = getLevelConfig(initialLevel);
+    const levelConfig = getLevelConfig(initialLevel, initialDifficulty);
 
     return {
+      screen: 'START',
+      difficulty: initialDifficulty,
       board: generatePlayableBoard(),
       score: 0,
       movesRemaining: levelConfig.moves,
@@ -74,6 +81,7 @@ export default function App() {
     };
   });
 
+  const [shatterEvents, setShatterEvents] = useState<ShatterEvent[]>([]);
   const [floatingScores, setFloatingScores] = useState<FloatingScore[]>([]);
   const [comboBanner, setComboBanner] = useState<string | null>(null);
   const [activeLineBlast, setActiveLineBlast] = useState<{ type: 'HORIZONTAL' | 'VERTICAL'; index: number } | null>(null);
@@ -112,8 +120,8 @@ export default function App() {
   const triggerConfetti = () => {
     try {
       confetti({
-        particleCount: 80,
-        spread: 70,
+        particleCount: 90,
+        spread: 80,
         origin: { y: 0.6 },
         colors: ['#fbbf24', '#f43f5e', '#38bdf8', '#34d399', '#a855f7'],
       });
@@ -123,7 +131,7 @@ export default function App() {
   };
 
   /**
-   * Process match-3 cascades recursively
+   * Process match-3 cascades recursively with glass breaking animations & sound
    */
   const processCascades = useCallback(
     async (
@@ -148,9 +156,12 @@ export default function App() {
       // Identify tiles to remove & special tiles to create
       const tilesToRemove = new Set<string>();
       const specialTilesToCreate: { pos: Position; special: SpecialTile; type: TileType }[] = [];
+      const newShatters: ShatterEvent[] = [];
+      let dominantType: TileType = TileType.RUBY;
 
       matches.forEach((match) => {
-        const matchScore = calculateMatchScore(match.tiles.length, comboMultiplier);
+        dominantType = match.type;
+        const matchScore = calculateMatchScore(match.tiles.length, comboMultiplier, gameState.difficulty);
         accumulatedScore += matchScore;
 
         const centerTile = match.tiles[Math.floor(match.tiles.length / 2)];
@@ -164,19 +175,22 @@ export default function App() {
 
         match.tiles.forEach((t) => {
           tilesToRemove.add(`${t.row},${t.col}`);
+          newShatters.push(generateShatterShards(t.row, t.col, t.type));
 
           // Trigger special line blast if already present on tile
           if (t.special === SpecialTile.LINE_BLAST_HORIZONTAL) {
             setActiveLineBlast({ type: 'HORIZONTAL', index: t.row });
-            soundManager.playSpecial();
+            soundManager.playLineBlast();
             for (let c = 0; c < BOARD_SIZE; c++) {
               tilesToRemove.add(`${t.row},${c}`);
+              newShatters.push(generateShatterShards(t.row, c, currentBoard[t.row][c]?.type || t.type));
             }
           } else if (t.special === SpecialTile.LINE_BLAST_VERTICAL) {
             setActiveLineBlast({ type: 'VERTICAL', index: t.col });
-            soundManager.playSpecial();
+            soundManager.playLineBlast();
             for (let r = 0; r < BOARD_SIZE; r++) {
               tilesToRemove.add(`${r},${t.col}`);
+              newShatters.push(generateShatterShards(r, t.col, currentBoard[r][t.col]?.type || t.type));
             }
           }
         });
@@ -191,10 +205,23 @@ export default function App() {
         }
       });
 
-      soundManager.playSmash(comboMultiplier);
+      // Glass shatter sound effect & particles
+      soundManager.playGlassShatter(dominantType, comboMultiplier);
+      setShatterEvents((prev) => [...prev, ...newShatters]);
+
+      // Set tiles to cracking state
+      for (let r = 0; r < BOARD_SIZE; r++) {
+        for (let c = 0; c < BOARD_SIZE; c++) {
+          if (tilesToRemove.has(`${r},${c}`) && currentBoard[r][c]) {
+            currentBoard[r][c]!.isCracking = true;
+            currentBoard[r][c]!.isMatched = true;
+          }
+        }
+      }
+      setGameState((prev) => ({ ...prev, board: cloneBoard(currentBoard) }));
 
       // Brief smash animation delay
-      await new Promise((r) => setTimeout(r, 280));
+      await new Promise((r) => setTimeout(r, 260));
       setActiveLineBlast(null);
 
       // Remove matched tiles
@@ -243,12 +270,17 @@ export default function App() {
         score: prev.score + accumulatedScore,
       }));
 
-      await new Promise((r) => setTimeout(r, 220));
+      // Clear shatters after effect completes
+      setTimeout(() => {
+        setShatterEvents([]);
+      }, 650);
+
+      await new Promise((r) => setTimeout(r, 240));
 
       // Cascade recursion with next multiplier
       return processCascades(currentBoard, comboMultiplier + 1, accumulatedScore);
     },
-    [addFloatingScore]
+    [addFloatingScore, gameState.difficulty]
   );
 
   /**
@@ -285,22 +317,30 @@ export default function App() {
         const targetColor = fromTile.special === SpecialTile.COLOR_BOMB ? toTile.type : fromTile.type;
         setActiveColorBlast(from);
 
-        await new Promise((r) => setTimeout(r, 300));
+        await new Promise((r) => setTimeout(r, 280));
         setActiveColorBlast(null);
 
         // Destroy all tiles of targetColor
         let removedCount = 0;
+        const shatters: ShatterEvent[] = [];
+
         for (let r = 0; r < BOARD_SIZE; r++) {
           for (let c = 0; c < BOARD_SIZE; c++) {
             if (testBoard[r][c]?.type === targetColor || (r === from.row && c === from.col) || (r === to.row && c === to.col)) {
+              if (testBoard[r][c]) {
+                shatters.push(generateShatterShards(r, c, testBoard[r][c]!.type));
+              }
               testBoard[r][c] = null;
               removedCount++;
             }
           }
         }
 
-        const bombScore = removedCount * 40;
-        addFloatingScore(`+${bombScore}`, from.row, from.col, '#ec4899', 1.3);
+        setShatterEvents((prev) => [...prev, ...shatters]);
+        soundManager.playGlassShatter(targetColor, 3);
+
+        const bombScore = removedCount * 45;
+        addFloatingScore(`+${bombScore}`, from.row, from.col, '#ec4899', 1.35);
 
         // Collapse columns
         for (let c = 0; c < BOARD_SIZE; c++) {
@@ -409,6 +449,48 @@ export default function App() {
   };
 
   /**
+   * Start a new game with chosen difficulty
+   */
+  const handleStartGame = (difficulty: DifficultyMode) => {
+    const levelConfig = getLevelConfig(1, difficulty);
+    soundManager.playSelect();
+
+    setGameState((prev) => ({
+      ...prev,
+      screen: 'PLAYING',
+      difficulty,
+      board: generatePlayableBoard(),
+      score: 0,
+      movesRemaining: levelConfig.moves,
+      currentLevel: 1,
+      targetScore: levelConfig.targetScore,
+      comboCount: 0,
+      isProcessing: false,
+      isPaused: false,
+      isGameOver: false,
+      isLevelComplete: false,
+      selectedTile: null,
+      hintTiles: null,
+    }));
+  };
+
+  /**
+   * Return to Start Screen
+   */
+  const handleGoToStart = () => {
+    soundManager.playSelect();
+    setGameState((prev) => ({
+      ...prev,
+      screen: 'START',
+      isPaused: false,
+      isGameOver: false,
+      isLevelComplete: false,
+      selectedTile: null,
+      hintTiles: null,
+    }));
+  };
+
+  /**
    * Tap-to-select tile click handler
    */
   const handleTileClick = (pos: Position) => {
@@ -470,7 +552,7 @@ export default function App() {
    */
   const handleRestart = (levelNumber?: number) => {
     const targetLevel = levelNumber ?? gameState.currentLevel;
-    const levelConfig = getLevelConfig(targetLevel);
+    const levelConfig = getLevelConfig(targetLevel, gameState.difficulty);
 
     setGameState((prev) => ({
       ...prev,
@@ -505,6 +587,27 @@ export default function App() {
   const movesBonus = gameState.movesRemaining * 100;
   const totalScoreWithBonus = gameState.score + movesBonus;
 
+  // Render Start Screen if screen === 'START'
+  if (gameState.screen === 'START') {
+    return (
+      <>
+        <StartScreen
+          onStartGame={handleStartGame}
+          highScore={gameState.highScore}
+          unlockedLevel={gameState.unlockedLevel}
+          soundEnabled={gameState.soundEnabled}
+          onToggleSound={handleToggleSound}
+          onOpenAndroidViewer={() => setIsAndroidViewerOpen(true)}
+        />
+        <AndroidProjectViewer
+          isOpen={isAndroidViewerOpen}
+          onClose={() => setIsAndroidViewerOpen(false)}
+        />
+      </>
+    );
+  }
+
+  // Render Active Gameplay Screen
   return (
     <div className="w-full min-h-screen bg-slate-950 text-slate-100 flex items-center justify-center p-0 sm:p-4 overflow-hidden relative font-sans select-none">
       {/* Dynamic Ambient Background Glow */}
@@ -523,6 +626,8 @@ export default function App() {
           targetScore={gameState.targetScore}
           movesRemaining={gameState.movesRemaining}
           highScore={gameState.highScore}
+          difficulty={gameState.difficulty}
+          onHome={handleGoToStart}
         />
 
         {/* Shuffle Notice Pill */}
@@ -540,6 +645,7 @@ export default function App() {
           selectedTile={gameState.selectedTile}
           hintTiles={gameState.hintTiles}
           floatingScores={floatingScores}
+          shatterEvents={shatterEvents}
           isProcessing={gameState.isProcessing}
           activeLineBlast={activeLineBlast}
           activeColorBlast={activeColorBlast}
@@ -567,6 +673,7 @@ export default function App() {
         isOpen={gameState.isPaused}
         onResume={() => setGameState((prev) => ({ ...prev, isPaused: false }))}
         onRestart={() => handleRestart()}
+        onHome={handleGoToStart}
         onToggleSound={handleToggleSound}
         soundEnabled={gameState.soundEnabled}
       />
@@ -580,6 +687,7 @@ export default function App() {
         highScore={gameState.highScore}
         onTryAgain={() => handleRestart()}
         onRestartLevel1={() => handleRestart(1)}
+        onHome={handleGoToStart}
       />
 
       {/* Level Complete Celebration Dialog Modal */}
@@ -591,6 +699,7 @@ export default function App() {
         totalScore={totalScoreWithBonus}
         onNextLevel={handleNextLevel}
         onReplay={() => handleRestart()}
+        onHome={handleGoToStart}
       />
 
       {/* Android Project Source Code Viewer */}

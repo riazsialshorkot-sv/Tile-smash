@@ -1,5 +1,6 @@
 import React from 'react';
-import { Trophy, Target, Sparkles } from 'lucide-react';
+import { Trophy, Target, Sparkles, Home } from 'lucide-react';
+import { DifficultyMode } from '../types';
 
 interface TopBarProps {
   level: number;
@@ -7,6 +8,8 @@ interface TopBarProps {
   targetScore: number;
   movesRemaining: number;
   highScore: number;
+  difficulty?: DifficultyMode;
+  onHome?: () => void;
 }
 
 export const TopBar: React.FC<TopBarProps> = ({
@@ -15,22 +18,47 @@ export const TopBar: React.FC<TopBarProps> = ({
   targetScore,
   movesRemaining,
   highScore,
+  difficulty = 'NORMAL',
+  onHome,
 }) => {
   const progressPercent = Math.min(100, Math.round((score / targetScore) * 100));
   const isLowMoves = movesRemaining <= 5;
+
+  const difficultyBadge =
+    difficulty === 'HARD'
+      ? { label: 'Hard', bg: 'bg-rose-500/20 border-rose-500/50 text-rose-300' }
+      : difficulty === 'EASY'
+      ? { label: 'Easy', bg: 'bg-emerald-500/20 border-emerald-500/50 text-emerald-300' }
+      : { label: 'Normal', bg: 'bg-amber-500/20 border-amber-500/50 text-amber-300' };
 
   return (
     <div className="w-full max-w-md mx-auto px-3 pt-2 pb-1 flex flex-col gap-2">
       {/* Title & Level Header */}
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
+          {onHome && (
+            <button
+              id="btn-nav-home"
+              onClick={onHome}
+              className="p-1.5 rounded-xl bg-slate-900/90 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white transition-all active:scale-95 shadow-md"
+              title="Return to Start Menu"
+            >
+              <Home className="w-4 h-4 text-sky-400" />
+            </button>
+          )}
+
           <div className="w-8 h-8 rounded-xl bg-gradient-to-tr from-amber-500 to-rose-500 flex items-center justify-center shadow-md shadow-rose-500/30">
             <Sparkles className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h1 className="font-game text-xl font-bold tracking-wide bg-gradient-to-r from-amber-300 via-rose-300 to-sky-300 bg-clip-text text-transparent">
-              TILE SMASH
-            </h1>
+            <div className="flex items-center gap-1.5">
+              <h1 className="font-game text-xl font-bold tracking-wide bg-gradient-to-r from-amber-300 via-rose-300 to-sky-300 bg-clip-text text-transparent">
+                TILE SMASH
+              </h1>
+              <span className={`text-[10px] font-bold px-1.5 py-0.2 rounded border ${difficultyBadge.bg}`}>
+                {difficultyBadge.label}
+              </span>
+            </div>
             <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
               Level {level}
             </span>

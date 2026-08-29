@@ -1,4 +1,4 @@
-import { Tile, TileType, SpecialTile, Position, Match, LevelConfig } from '../types';
+import { Tile, TileType, SpecialTile, Position, Match, LevelConfig, DifficultyMode } from '../types';
 
 export const BOARD_SIZE = 8;
 export const ALL_TILE_TYPES: TileType[] = [
@@ -18,19 +18,41 @@ export const LEVEL_CONFIGS: LevelConfig[] = [
   { level: 5, targetScore: 7500, moves: 22, description: 'Master the tile smashes!' },
 ];
 
-export function getLevelConfig(level: number): LevelConfig {
+export function getLevelConfig(level: number, difficulty: DifficultyMode = 'NORMAL'): LevelConfig {
+  let base: LevelConfig;
   if (level <= LEVEL_CONFIGS.length) {
-    return LEVEL_CONFIGS[level - 1];
+    base = { ...LEVEL_CONFIGS[level - 1] };
+  } else {
+    // Progressively harder generated levels
+    const targetScore = Math.floor(7500 + (level - 5) * 2800);
+    const moves = Math.max(18, Math.floor(22 - (level - 5) * 0.5));
+    base = {
+      level,
+      targetScore,
+      moves,
+      description: `Level ${level} Challenge`,
+    };
   }
-  // Progressively harder generated levels
-  const targetScore = Math.floor(7500 + (level - 5) * 2800);
-  const moves = Math.max(18, Math.floor(22 - (level - 5) * 0.5));
-  return {
-    level,
-    targetScore,
-    moves,
-    description: `Level ${level} Challenge`,
-  };
+
+  // Adjust for difficulty
+  if (difficulty === 'EASY') {
+    return {
+      ...base,
+      moves: base.moves + 8,
+      targetScore: Math.round(base.targetScore * 0.8),
+      description: `${base.description || `Level ${level}`} (Relaxed)`,
+    };
+  }
+  if (difficulty === 'HARD') {
+    return {
+      ...base,
+      moves: Math.max(14, base.moves - 7),
+      targetScore: Math.round(base.targetScore * 1.35),
+      description: `${base.description || `Level ${level}`} (Master)`,
+    };
+  }
+
+  return base;
 }
 
 let nextTileId = 1;
@@ -288,12 +310,17 @@ export function shuffleBoard(board: (Tile | null)[][]): (Tile | null)[][] {
 /**
  * Calculates score for removed tiles and cascade multiplier
  */
-export function calculateMatchScore(tileCount: number, comboMultiplier: number): number {
+export function calculateMatchScore(
+  tileCount: number,
+  comboMultiplier: number,
+  difficulty: DifficultyMode = 'NORMAL'
+): number {
   let baseScore = 30;
   if (tileCount === 3) baseScore = 30;
   else if (tileCount === 4) baseScore = 60;
   else if (tileCount === 5) baseScore = 100;
   else if (tileCount >= 6) baseScore = 150 + (tileCount - 6) * 30;
 
-  return baseScore * Math.max(1, comboMultiplier);
+  const difficultyMultiplier = difficulty === 'HARD' ? 1.5 : difficulty === 'EASY' ? 1.0 : 1.2;
+  return Math.round(baseScore * Math.max(1, comboMultiplier) * difficultyMultiplier);
 }

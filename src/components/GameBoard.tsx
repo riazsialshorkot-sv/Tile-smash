@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
-import { Tile, Position, FloatingScore } from '../types';
+import { Tile, Position, FloatingScore, ShatterEvent } from '../types';
 import { TileComponent } from './TileComponent';
+import { ShatterParticleOverlay } from './ShatterParticleOverlay';
 import { BOARD_SIZE, areAdjacent } from '../game/match3Engine';
 
 interface GameBoardProps {
@@ -8,6 +9,7 @@ interface GameBoardProps {
   selectedTile: Position | null;
   hintTiles: Position[] | null;
   floatingScores: FloatingScore[];
+  shatterEvents?: ShatterEvent[];
   isProcessing: boolean;
   activeLineBlast: { type: 'HORIZONTAL' | 'VERTICAL'; index: number } | null;
   activeColorBlast: Position | null;
@@ -34,6 +36,7 @@ export const GameBoard: React.FC<GameBoardProps> = ({
   selectedTile,
   hintTiles,
   floatingScores,
+  shatterEvents = [],
   isProcessing,
   activeLineBlast,
   activeColorBlast,
@@ -338,6 +341,9 @@ export const GameBoard: React.FC<GameBoardProps> = ({
             }}
           />
         )}
+
+        {/* Dynamic Glass Breaking Shatter Particle Overlay */}
+        <ShatterParticleOverlay shatterEvents={shatterEvents} />
 
         {/* Floating Scores Overlay */}
         {floatingScores.map((item) => (

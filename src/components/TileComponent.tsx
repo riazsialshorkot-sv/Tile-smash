@@ -126,6 +126,7 @@ export const TileComponent: React.FC<TileComponentProps> = ({
         ${isColorBomb ? 'animate-rainbow' : ''}
         ${isDragging ? 'shadow-2xl ring-2 ring-white/90' : ''}
         ${isTargetPartner ? 'ring-2 ring-amber-300/80 shadow-lg' : ''}
+        ${tile.isMatched || tile.isCracking ? 'scale-110 brightness-150 animate-pulse' : ''}
       `}
       style={transformStyle}
     >
@@ -139,6 +140,25 @@ export const TileComponent: React.FC<TileComponentProps> = ({
           isColorBomb ? 'border-white/90' : style.border
         } shadow-lg ${style.shadow} flex items-center justify-center overflow-hidden relative pointer-events-none`}
       >
+        {/* Glass Fracture Crack Lines when matched/cracking */}
+        {(tile.isMatched || tile.isCracking) && (
+          <svg
+            viewBox="0 0 100 100"
+            className="absolute inset-0 w-full h-full stroke-white/90 fill-none z-20 pointer-events-none drop-shadow-[0_0_4px_rgba(255,255,255,1)]"
+            strokeWidth="3"
+            strokeLinecap="round"
+          >
+            <line x1="50" y1="50" x2="10" y2="15" />
+            <line x1="50" y1="50" x2="85" y2="20" />
+            <line x1="50" y1="50" x2="90" y2="85" />
+            <line x1="50" y1="50" x2="25" y2="90" />
+            <line x1="50" y1="50" x2="5" y2="55" />
+            <line x1="30" y1="32" x2="15" y2="45" strokeWidth="2" />
+            <line x1="68" y1="35" x2="80" y2="50" strokeWidth="2" />
+            <circle cx="50" cy="50" r="6" className="fill-white" />
+          </svg>
+        )}
+
         {/* Glossy Top Glass Pill Reflection */}
         <div className="absolute top-1 left-1.5 right-1.5 h-1/3 rounded-t-lg bg-gradient-to-b from-white/65 to-white/5 pointer-events-none" />
 

@@ -1,9 +1,9 @@
 export enum TileType {
   RUBY = 'RUBY',          // Red Gem / Heart
-  AMBER = 'AMBER',        // Orange Sun / Flame
+  AMBER = 'AMBER',        // Orange Sun / Star
   TOPAZ = 'TOPAZ',        // Yellow Star
-  EMERALD = 'EMERALD',    // Green Leaf / Emerald
-  SAPPHIRE = 'SAPPHIRE',  // Blue Water / Hexagon
+  EMERALD = 'EMERALD',    // Green Shield / Emerald
+  SAPPHIRE = 'SAPPHIRE',  // Blue Droplet / Hexagon
   AMETHYST = 'AMETHYST',  // Purple Diamond
 }
 
@@ -13,6 +13,9 @@ export enum SpecialTile {
   LINE_BLAST_VERTICAL = 'LINE_BLAST_VERTICAL',
   COLOR_BOMB = 'COLOR_BOMB',
 }
+
+export type DifficultyMode = 'EASY' | 'NORMAL' | 'HARD';
+export type AppScreen = 'START' | 'PLAYING';
 
 export interface Position {
   row: number;
@@ -28,6 +31,7 @@ export interface Tile {
   isMatched?: boolean;
   isNew?: boolean;
   isHinted?: boolean;
+  isCracking?: boolean;
 }
 
 export interface Match {
@@ -47,6 +51,28 @@ export interface FloatingScore {
   scale?: number;
 }
 
+export interface ShatterShard {
+  id: string;
+  x: number;
+  y: number;
+  vx: number;
+  vy: number;
+  rot: number;
+  rotSpeed: number;
+  size: number;
+  color: string;
+  clipPath: string;
+}
+
+export interface ShatterEvent {
+  id: string;
+  row: number;
+  col: number;
+  type: TileType;
+  special?: SpecialTile;
+  shards: ShatterShard[];
+}
+
 export interface LevelConfig {
   level: number;
   targetScore: number;
@@ -55,6 +81,8 @@ export interface LevelConfig {
 }
 
 export interface GameState {
+  screen: AppScreen;
+  difficulty: DifficultyMode;
   board: (Tile | null)[][];
   score: number;
   movesRemaining: number;
