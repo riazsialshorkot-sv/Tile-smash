@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowForward
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Star
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -26,7 +27,8 @@ fun LevelCompleteDialog(
     movesBonus: Int,
     totalScore: Int,
     onNextLevel: () -> Unit,
-    onReplay: () -> Unit
+    onReplay: () -> Unit,
+    onHome: (() -> Unit)? = null
 ) {
     if (!isOpen) return
 
@@ -111,6 +113,19 @@ fun LevelCompleteDialog(
                     colors = ButtonDefaults.buttonColors(containerColor = Slate800)
                 ) {
                     Text("Replay Level", color = Slate400, fontWeight = FontWeight.Bold)
+                }
+
+                if (onHome != null) {
+                    Button(
+                        onClick = onHome,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Slate900)
+                    ) {
+                        Icon(Icons.Default.Home, contentDescription = null, tint = SapphireBlue)
+                        Spacer(Modifier.width(8.dp))
+                        Text("Main Menu", color = Slate300, fontWeight = FontWeight.Bold)
+                    }
                 }
             }
         }

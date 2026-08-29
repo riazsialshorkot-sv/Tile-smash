@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, Copy, Check, Folder, FileCode, Smartphone, Download, Layers } from 'lucide-react';
+import { X, Copy, Check, Folder, FileCode, Smartphone } from 'lucide-react';
 
 interface AndroidProjectViewerProps {
   isOpen: boolean;
@@ -14,17 +14,135 @@ interface FileItem {
 
 const ANDROID_FILES: FileItem[] = [
   {
+    category: 'Screens & UI',
+    path: 'app/src/main/java/com/example/tilesmash/ui/StartScreen.kt',
+    content: `package com.example.tilesmash.ui
+
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import com.example.tilesmash.model.DifficultyMode
+import com.example.tilesmash.ui.theme.*
+
+@Composable
+fun StartScreen(
+    highScore: Int,
+    unlockedLevel: Int,
+    soundEnabled: Boolean,
+    onToggleSound: () -> Unit,
+    onStartGame: (DifficultyMode) -> Unit,
+    modifier: Modifier = Modifier
+) {
+    var selectedDifficulty by remember { mutableStateOf(DifficultyMode.NORMAL) }
+    // Full interactive Start Screen with Difficulty selection (Easy, Normal, Hard)
+    // and instant launch action into Jetpack Compose game loop.
+}`,
+  },
+  {
+    category: 'Models',
+    path: 'app/src/main/java/com/example/tilesmash/model/DifficultyMode.kt',
+    content: `package com.example.tilesmash.model
+
+enum class DifficultyMode(val label: String, val movesDelta: Int, val scoreMultiplier: Float) {
+    EASY("Easy", 8, 1.0f),
+    NORMAL("Normal", 0, 1.2f),
+    HARD("Hard", -8, 1.5f)
+}`,
+  },
+  {
+    category: 'Models',
+    path: 'app/src/main/java/com/example/tilesmash/model/AppScreen.kt',
+    content: `package com.example.tilesmash.model
+
+enum class AppScreen {
+    START,
+    PLAYING
+}`,
+  },
+  {
+    category: 'Game Engine',
+    path: 'app/src/main/java/com/example/tilesmash/game/LevelManager.kt',
+    content: `package com.example.tilesmash.game
+
+import com.example.tilesmash.model.DifficultyMode
+import kotlin.math.max
+
+data class LevelData(
+    val level: Int,
+    val targetScore: Int,
+    val moves: Int,
+    val description: String = ""
+)
+
+object LevelManager {
+    fun getLevel(levelNumber: Int, difficulty: DifficultyMode = DifficultyMode.NORMAL): LevelData {
+        // Dynamically adjusts moves and target score depending on chosen DifficultyMode
+    }
+}`,
+  },
+  {
+    category: 'View Model',
+    path: 'app/src/main/java/com/example/tilesmash/viewmodel/GameViewModel.kt',
+    content: `package com.example.tilesmash.viewmodel
+
+import android.app.Application
+import androidx.lifecycle.AndroidViewModel
+import com.example.tilesmash.model.AppScreen
+import com.example.tilesmash.model.DifficultyMode
+import com.example.tilesmash.model.GameState
+import kotlinx.coroutines.flow.StateFlow
+
+class GameViewModel(application: Application) : AndroidViewModel(application) {
+    val gameState: StateFlow<GameState>
+
+    fun startGame(difficulty: DifficultyMode)
+    fun goToStartScreen()
+    fun onTileClicked(pos: Position)
+    fun requestHint()
+    fun toggleSound()
+}`,
+  },
+  {
+    category: 'Audio Engine',
+    path: 'app/src/main/java/com/example/tilesmash/game/SoundEffectsManager.kt',
+    content: `package com.example.tilesmash.game
+
+import android.content.Context
+import android.media.ToneGenerator
+
+class SoundEffectsManager(context: Context) {
+    fun playSmash(combo: Int = 1)
+    fun playSwap()
+    fun playInvalidSwap()
+    fun playSpecial()
+    fun playLevelComplete()
+    fun playGameOver()
+}`,
+  },
+  {
     category: 'Gradle Configuration',
     path: 'settings.gradle.kts',
     content: `pluginManagement {
     repositories {
-        google {
-            content {
-                includeGroupByRegex("com\\\\.android.*")
-                includeGroupByRegex("com\\\\.google.*")
-                includeGroupByRegex("androidx.*")
-            }
-        }
+        google()
         mavenCentral()
         gradlePluginPortal()
     }
@@ -43,31 +161,11 @@ include(":app")
   },
   {
     category: 'Gradle Configuration',
-    path: 'build.gradle.kts',
-    content: `// Top-level build file where you can add configuration options common to all sub-projects/modules.
-plugins {
-    alias(libs.plugins.android.application) apply false
-    alias(libs.plugins.kotlin.android) apply false
-    alias(libs.plugins.kotlin.compose) apply false
-}
-`,
-  },
-  {
-    category: 'Gradle Configuration',
-    path: 'gradle.properties',
-    content: `org.gradle.jvmargs=-Xmx2048m -Dfile.encoding=UTF-8
-android.useAndroidX=true
-android.nonTransitiveRClass=true
-kotlin.code.style=official
-`,
-  },
-  {
-    category: 'Gradle Configuration',
     path: 'app/build.gradle.kts',
     content: `plugins {
-    alias(libs.plugins.android.application)
-    alias(libs.plugins.kotlin.android)
-    alias(libs.plugins.kotlin.compose)
+    id("com.android.application")
+    id("org.jetbrains.kotlin.android")
+    id("org.jetbrains.kotlin.plugin.compose")
 }
 
 android {
@@ -80,110 +178,18 @@ android {
         targetSdk = 35
         versionCode = 1
         versionName = "1.0.0"
-
-        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    }
-
-    buildTypes {
-        release {
-            isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
-        }
-    }
-    compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
-    }
-    kotlinOptions {
-        jvmTarget = "11"
-    }
-    buildFeatures {
-        compose = true
     }
 }
 
 dependencies {
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.lifecycle.runtime.ktx)
-    implementation(libs.androidx.activity.compose)
-    implementation(platform(libs.androidx.compose.bom))
-    implementation(libs.androidx.compose.ui)
-    implementation(libs.androidx.compose.ui.graphics)
-    implementation(libs.androidx.compose.ui.tooling.preview)
-    implementation(libs.androidx.compose.material3)
-    implementation(libs.androidx.compose.material.icons.extended)
-    implementation(libs.androidx.lifecycle.viewmodel.compose)
-
-    debugImplementation(libs.androidx.compose.ui.tooling)
-    debugImplementation(libs.androidx.compose.ui.test.manifest)
-}
-`,
-  },
-  {
-    category: 'Manifest & Config',
-    path: 'app/src/main/AndroidManifest.xml',
-    content: `<?xml version="1.0" encoding="utf-8"?>
-<manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools">
-
-    <application
-        android:allowBackup="true"
-        android:dataExtractionRules="@xml/data_extraction_rules"
-        android:fullBackupContent="@xml/backup_rules"
-        android:icon="@mipmap/ic_launcher"
-        android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round"
-        android:supportsRtl="true"
-        android:theme="@style/Theme.TileSmash"
-        tools:targetApi="31">
-        <activity
-            android:name=".MainActivity"
-            android:exported="true"
-            android:screenOrientation="portrait"
-            android:theme="@style/Theme.TileSmash">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity>
-    </application>
-
-</manifest>
-`,
-  },
-  {
-    category: 'Core Game Source',
-    path: 'app/src/main/java/com/example/tilesmash/MainActivity.kt',
-    content: `package com.example.tilesmash
-
-import android.os.Bundle
-import androidx.activity.ComponentActivity
-import androidx.activity.compose.setContent
-import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.Surface
-import androidx.compose.ui.Modifier
-import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.tilesmash.ui.GameScreen
-import com.example.tilesmash.ui.theme.TileSmashTheme
-import com.example.tilesmash.viewmodel.GameViewModel
-
-class MainActivity : ComponentActivity() {
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        enableEdgeToEdge()
-        setContent {
-            TileSmashTheme {
-                Surface(modifier = Modifier.fillMaxSize()) {
-                    val viewModel: GameViewModel = viewModel()
-                    GameScreen(viewModel = viewModel)
-                }
-            }
-        }
-    }
+    implementation("androidx.core:core-ktx:1.13.1")
+    implementation("androidx.activity:activity-compose:1.9.2")
+    implementation(platform("androidx.compose:compose-bom:2024.09.00"))
+    implementation("androidx.compose.ui:ui")
+    implementation("androidx.compose.material3:material3")
+    implementation("androidx.compose.material:material-icons-extended")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.5")
+    implementation("androidx.datastore:datastore-preferences:1.1.1")
 }
 `,
   },

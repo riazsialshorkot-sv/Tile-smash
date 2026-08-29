@@ -10,6 +10,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.EmojiEvents
 import androidx.compose.material.icons.filled.Flag
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -21,6 +22,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.example.tilesmash.model.DifficultyMode
 import com.example.tilesmash.ui.theme.*
 
 @Composable
@@ -30,6 +32,8 @@ fun TopBar(
     targetScore: Int,
     movesRemaining: Int,
     highScore: Int,
+    difficulty: DifficultyMode = DifficultyMode.NORMAL,
+    onHome: (() -> Unit)? = null,
     modifier: Modifier = Modifier
 ) {
     val progress = (score.toFloat() / targetScore.coerceAtLeast(1).toFloat()).coerceIn(0f, 1f)
@@ -39,8 +43,8 @@ fun TopBar(
     Column(
         modifier = modifier
             .fillMaxWidth()
-            .padding(horizontal = 16.dp, vertical = 8.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
+            .padding(horizontal = 16.dp, vertical = 6.dp),
+        verticalArrangement = Arrangement.spacedBy(6.dp)
     ) {
         // Title & High Score Header
         Row(
@@ -52,9 +56,27 @@ fun TopBar(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
+                if (onHome != null) {
+                    IconButton(
+                        onClick = onHome,
+                        modifier = Modifier
+                            .size(34.dp)
+                            .clip(RoundedCornerShape(10.dp))
+                            .background(Slate900)
+                            .border(1.dp, Slate800, RoundedCornerShape(10.dp))
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Home,
+                            contentDescription = "Main Menu",
+                            tint = SapphireBlue,
+                            modifier = Modifier.size(18.dp)
+                        )
+                    }
+                }
+
                 Box(
                     modifier = Modifier
-                        .size(36.dp)
+                        .size(34.dp)
                         .clip(RoundedCornerShape(10.dp))
                         .background(Brush.linearGradient(listOf(AmberOrange, RubyRed))),
                     contentAlignment = Alignment.Center
@@ -63,19 +85,57 @@ fun TopBar(
                         imageVector = Icons.Default.AutoAwesome,
                         contentDescription = null,
                         tint = Color.White,
-                        modifier = Modifier.size(20.dp)
+                        modifier = Modifier.size(18.dp)
                     )
                 }
+
                 Column {
-                    Text(
-                        text = "TILE SMASH",
-                        fontWeight = FontWeight.Black,
-                        fontSize = 18.sp,
-                        color = GoldAccent
-                    )
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Text(
+                            text = "TILE SMASH",
+                            fontWeight = FontWeight.Black,
+                            fontSize = 16.sp,
+                            color = GoldAccent
+                        )
+                        Box(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(4.dp))
+                                .background(
+                                    when (difficulty) {
+                                        DifficultyMode.EASY -> EmeraldGreen.copy(alpha = 0.2f)
+                                        DifficultyMode.NORMAL -> AmberOrange.copy(alpha = 0.2f)
+                                        DifficultyMode.HARD -> RubyRed.copy(alpha = 0.2f)
+                                    }
+                                )
+                                .border(
+                                    1.dp,
+                                    when (difficulty) {
+                                        DifficultyMode.EASY -> EmeraldGreen
+                                        DifficultyMode.NORMAL -> AmberOrange
+                                        DifficultyMode.HARD -> RubyRed
+                                    },
+                                    RoundedCornerShape(4.dp)
+                                )
+                                .padding(horizontal = 4.dp, vertical = 1.dp)
+                        ) {
+                            Text(
+                                text = difficulty.label,
+                                fontSize = 9.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = when (difficulty) {
+                                    DifficultyMode.EASY -> EmeraldGreen
+                                    DifficultyMode.NORMAL -> AmberOrange
+                                    DifficultyMode.HARD -> RubyRed
+                                }
+                            )
+                        }
+                    }
                     Text(
                         text = "LEVEL $level",
-                        fontSize = 11.sp,
+                        fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
                         color = Slate400
                     )
@@ -99,8 +159,8 @@ fun TopBar(
                     modifier = Modifier.size(14.dp)
                 )
                 Text(
-                    text = "Best: $highScore",
-                    fontSize = 12.sp,
+                    text = "Best: %,d".format(highScore),
+                    fontSize = 11.sp,
                     fontWeight = FontWeight.Bold,
                     color = GoldAccent
                 )
@@ -120,13 +180,13 @@ fun TopBar(
                 border = androidx.compose.foundation.BorderStroke(1.dp, Slate800)
             ) {
                 Column(
-                    modifier = Modifier.padding(vertical = 8.dp, horizontal = 6.dp),
+                    modifier = Modifier.padding(vertical = 6.dp, horizontal = 6.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("SCORE", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Slate400)
+                    Text("SCORE", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Slate400)
                     Text(
                         text = "%,d".format(score),
-                        fontSize = 16.sp,
+                        fontSize = 15.sp,
                         fontWeight = FontWeight.ExtraBold,
                         color = AmberOrange
                     )
@@ -144,13 +204,13 @@ fun TopBar(
                 )
             ) {
                 Column(
-                    modifier = Modifier.padding(vertical = 8.dp, horizontal = 6.dp),
+                    modifier = Modifier.padding(vertical = 6.dp, horizontal = 6.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Text("MOVES", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Slate400)
+                    Text("MOVES", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Slate400)
                     Text(
                         text = "$movesRemaining",
-                        fontSize = 16.sp,
+                        fontSize = 15.sp,
                         fontWeight = FontWeight.ExtraBold,
                         color = if (isLowMoves) RubyRed else SapphireBlue
                     )
@@ -165,7 +225,7 @@ fun TopBar(
                 border = androidx.compose.foundation.BorderStroke(1.dp, Slate800)
             ) {
                 Column(
-                    modifier = Modifier.padding(vertical = 8.dp, horizontal = 6.dp),
+                    modifier = Modifier.padding(vertical = 6.dp, horizontal = 6.dp),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
                     Row(
@@ -178,11 +238,11 @@ fun TopBar(
                             tint = EmeraldGreen,
                             modifier = Modifier.size(10.dp)
                         )
-                        Text("TARGET", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Slate400)
+                        Text("TARGET", fontSize = 9.sp, fontWeight = FontWeight.Bold, color = Slate400)
                     }
                     Text(
                         text = "%,d".format(targetScore),
-                        fontSize = 16.sp,
+                        fontSize = 15.sp,
                         fontWeight = FontWeight.ExtraBold,
                         color = EmeraldGreen
                     )
@@ -194,7 +254,7 @@ fun TopBar(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(16.dp)
+                .height(14.dp)
                 .clip(CircleShape)
                 .background(Slate900)
                 .border(1.dp, Slate800, CircleShape),

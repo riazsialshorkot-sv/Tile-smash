@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -25,7 +26,8 @@ fun GameOverDialog(
     targetScore: Int,
     highScore: Int,
     onTryAgain: () -> Unit,
-    onRestartFromLevel1: () -> Unit
+    onRestartFromLevel1: () -> Unit,
+    onHome: (() -> Unit)? = null
 ) {
     if (!isOpen) return
 
@@ -39,7 +41,7 @@ fun GameOverDialog(
             Column(
                 modifier = Modifier.padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 Text(
                     text = "GAME OVER",
@@ -97,11 +99,24 @@ fun GameOverDialog(
                     Text("Try Again", fontWeight = FontWeight.Bold, fontSize = 16.sp)
                 }
 
+                if (onHome != null) {
+                    Button(
+                        onClick = onHome,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Slate800)
+                    ) {
+                        Icon(Icons.Default.Home, contentDescription = null, tint = SapphireBlue)
+                        Spacer(Modifier.width(8.dp))
+                        Text("Main Menu & Difficulty", color = SapphireBlue, fontWeight = FontWeight.Bold)
+                    }
+                }
+
                 Button(
                     onClick = onRestartFromLevel1,
                     modifier = Modifier.fillMaxWidth(),
                     shape = RoundedCornerShape(12.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = Slate800)
+                    colors = ButtonDefaults.buttonColors(containerColor = Slate900)
                 ) {
                     Text("Restart Level 1", color = Slate400, fontWeight = FontWeight.Bold)
                 }

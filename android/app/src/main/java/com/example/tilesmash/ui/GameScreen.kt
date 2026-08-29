@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import com.example.tilesmash.model.AppScreen
 import com.example.tilesmash.ui.theme.Slate950
 import com.example.tilesmash.viewmodel.GameViewModel
 
@@ -15,6 +16,20 @@ fun GameScreen(
 ) {
     val state by viewModel.gameState.collectAsState()
 
+    // 1. Render Start Screen
+    if (state.screen == AppScreen.START) {
+        StartScreen(
+            highScore = state.highScore,
+            unlockedLevel = state.unlockedLevel,
+            soundEnabled = state.soundEnabled,
+            onToggleSound = { viewModel.toggleSound() },
+            onStartGame = { difficulty -> viewModel.startGame(difficulty) },
+            modifier = modifier
+        )
+        return
+    }
+
+    // 2. Render Active Gameplay Screen
     Box(
         modifier = modifier
             .fillMaxSize()
@@ -29,13 +44,15 @@ fun GameScreen(
             verticalArrangement = Arrangement.SpaceBetween,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Top Section
+            // Top Section with Home Button & Difficulty badge
             TopBar(
                 level = state.currentLevel,
                 score = state.score,
                 targetScore = state.targetScore,
                 movesRemaining = state.movesRemaining,
-                highScore = state.highScore
+                highScore = state.highScore,
+                difficulty = state.difficulty,
+                onHome = { viewModel.goToStartScreen() }
             )
 
             // Main Section: 8x8 Board
@@ -68,6 +85,7 @@ fun GameScreen(
             soundEnabled = state.soundEnabled,
             onResume = { viewModel.resumeGame() },
             onRestart = { viewModel.restartCurrentLevel() },
+            onHome = { viewModel.goToStartScreen() },
             onToggleSound = { viewModel.toggleSound() }
         )
 
@@ -78,7 +96,8 @@ fun GameScreen(
             targetScore = state.targetScore,
             highScore = state.highScore,
             onTryAgain = { viewModel.restartCurrentLevel() },
-            onRestartFromLevel1 = { viewModel.startLevel(1) }
+            onRestartFromLevel1 = { viewModel.startLevel(1, state.difficulty) },
+            onHome = { viewModel.goToStartScreen() }
         )
 
         val movesBonus = state.movesRemaining * 100
@@ -89,7 +108,8 @@ fun GameScreen(
             movesBonus = movesBonus,
             totalScore = state.score + movesBonus,
             onNextLevel = { viewModel.nextLevel() },
-            onReplay = { viewModel.restartCurrentLevel() }
+            onReplay = { viewModel.restartCurrentLevel() },
+            onHome = { viewModel.goToStartScreen() }
         )
     }
 }

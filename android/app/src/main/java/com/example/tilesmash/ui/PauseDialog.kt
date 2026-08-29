@@ -5,6 +5,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.filled.VolumeOff
@@ -27,6 +28,7 @@ fun PauseDialog(
     soundEnabled: Boolean,
     onResume: () -> Unit,
     onRestart: () -> Unit,
+    onHome: (() -> Unit)? = null,
     onToggleSound: () -> Unit
 ) {
     if (!isOpen) return
@@ -41,7 +43,7 @@ fun PauseDialog(
             Column(
                 modifier = Modifier.padding(24.dp),
                 horizontalAlignment = Alignment.CenterHorizontally,
-                verticalArrangement = Arrangement.spacedBy(16.dp)
+                verticalArrangement = Arrangement.spacedBy(14.dp)
             ) {
                 Text(
                     text = "GAME PAUSED",
@@ -70,6 +72,19 @@ fun PauseDialog(
                     Icon(Icons.Default.Refresh, contentDescription = null, tint = AmberOrange)
                     Spacer(Modifier.width(8.dp))
                     Text("Restart Level", fontWeight = FontWeight.Bold)
+                }
+
+                if (onHome != null) {
+                    Button(
+                        onClick = onHome,
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        colors = ButtonDefaults.buttonColors(containerColor = Slate800)
+                    ) {
+                        Icon(Icons.Default.Home, contentDescription = null, tint = SapphireBlue)
+                        Spacer(Modifier.width(8.dp))
+                        Text("Main Menu & Difficulty", fontWeight = FontWeight.Bold, color = SapphireBlue)
+                    }
                 }
 
                 Button(

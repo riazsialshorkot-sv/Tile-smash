@@ -1,5 +1,6 @@
 package com.example.tilesmash.game
 
+import com.example.tilesmash.model.DifficultyMode
 import com.example.tilesmash.model.FloatingScore
 import com.example.tilesmash.model.Match
 import com.example.tilesmash.model.MatchDirection
@@ -42,7 +43,8 @@ object Match3Engine {
     fun activateColorBomb(
         board: List<List<Tile?>>,
         bombPos: Position,
-        targetType: TileType
+        targetType: TileType,
+        difficulty: DifficultyMode = DifficultyMode.NORMAL
     ): Pair<List<List<Tile?>>, Int> {
         val copy = board.map { it.toMutableList() }.toMutableList()
         var count = 0
@@ -57,7 +59,7 @@ object Match3Engine {
         }
 
         val collapsed = collapseAndSpawn(copy)
-        val score = count * 40
+        val score = (count * 45 * difficulty.scoreMultiplier).toInt()
         return collapsed to score
     }
 
@@ -89,7 +91,8 @@ object Match3Engine {
      */
     fun processCascadeStep(
         board: List<List<Tile?>>,
-        combo: Int
+        combo: Int,
+        difficulty: DifficultyMode = DifficultyMode.NORMAL
     ): CascadeResult? {
         val matches = MatchDetector.findMatches(board)
         if (matches.isEmpty()) return null
@@ -102,7 +105,7 @@ object Match3Engine {
         var lineBlastTrigger: Pair<String, Int>? = null
 
         matches.forEach { match ->
-            val matchScore = ScoreCalculator.calculateScore(match.tiles.size, combo)
+            val matchScore = ScoreCalculator.calculateScore(match.tiles.size, combo, difficulty)
             scoreEarned += matchScore
 
             val centerTile = match.tiles[match.tiles.size / 2]

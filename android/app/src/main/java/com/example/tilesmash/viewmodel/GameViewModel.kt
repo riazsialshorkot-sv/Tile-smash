@@ -9,6 +9,8 @@ import com.example.tilesmash.game.LevelManager
 import com.example.tilesmash.game.Match3Engine
 import com.example.tilesmash.game.MatchDetector
 import com.example.tilesmash.game.SoundEffectsManager
+import com.example.tilesmash.model.AppScreen
+import com.example.tilesmash.model.DifficultyMode
 import com.example.tilesmash.model.GameState
 import com.example.tilesmash.model.Position
 import com.example.tilesmash.model.SpecialTile
@@ -31,15 +33,43 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
 
     init {
         soundManager.isSoundEnabled = preferences.isSoundEnabled
-        startLevel(1)
+        _gameState.update {
+            it.copy(
+                screen = AppScreen.START,
+                highScore = preferences.highScore,
+                unlockedLevel = preferences.unlockedLevel,
+                soundEnabled = preferences.isSoundEnabled
+            )
+        }
     }
 
-    fun startLevel(levelNumber: Int) {
-        val levelData = LevelManager.getLevel(levelNumber)
+    fun startGame(difficulty: DifficultyMode) {
+        soundManager.playSelect()
+        startLevel(1, difficulty)
+        _gameState.update { it.copy(screen = AppScreen.PLAYING, difficulty = difficulty) }
+    }
+
+    fun goToStartScreen() {
+        soundManager.playSelect()
+        _gameState.update {
+            it.copy(
+                screen = AppScreen.START,
+                isPaused = false,
+                isGameOver = false,
+                isLevelComplete = false,
+                selectedTile = null,
+                hintTiles = null
+            )
+        }
+    }
+
+    fun startLevel(levelNumber: Int, difficulty: DifficultyMode = _gameState.value.difficulty) {
+        val levelData = LevelManager.getLevel(levelNumber, difficulty)
         val initialBoard = BoardGenerator.generatePlayableBoard()
 
         _gameState.update {
             it.copy(
+                difficulty = difficulty,
                 board = initialBoard,
                 score = 0,
                 movesRemaining = levelData.moves,
@@ -108,6 +138,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             val currentBoard = _gameState.value.board
             val fromTile = currentBoard[from.row][from.col]
             val toTile = currentBoard[to.row][to.col]
+            val difficulty = _gameState.value.difficulty
 
             if (fromTile == null || toTile == null) {
                 _gameState.update { it.copy(isProcessing = false) }
@@ -118,7 +149,7 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
             if (fromTile.special == SpecialTile.COLOR_BOMB || toTile.special == SpecialTile.COLOR_BOMB) {
                 soundManager.playSpecial()
                 val targetType = if (fromTile.special == SpecialTile.COLOR_BOMB) toTile.type else fromTile.type
-                val (newBoard, bombScore) = Match3Engine.activateColorBomb(currentBoard, from, targetType)
+                val (newBoard, bombScore) = Match3Engine.activateColorBomb(currentBoard, from, targetType, difficulty)
 
                 _gameState.update {
                     it.copy(
@@ -157,13 +188,12 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     private suspend fun runCascadesLoop(initialBoard: List<List<Tile?>>, combo: Int) {
         var currentBoard = initialBoard
         var currentCombo = combo
-        var totalCascadeScore = 0
+        val difficulty = _gameState.value.difficulty
 
         while (true) {
-            val stepResult = Match3Engine.processCascadeStep(currentBoard, currentCombo)
+            val stepResult = Match3Engine.processCascadeStep(currentBoard, currentCombo, difficulty)
             if (stepResult == null) break
 
-            totalCascadeScore += stepResult.scoreEarned
             soundManager.playSmash(currentCombo)
 
             val banner = if (currentCombo > 1) "COMBO x$currentCombo!" else null
@@ -268,11 +298,11 @@ class GameViewModel(application: Application) : AndroidViewModel(application) {
     }
 
     fun restartCurrentLevel() {
-        startLevel(_gameState.value.currentLevel)
+        startLevel(_gameState.value.currentLevel, _gameState.value.difficulty)
     }
 
     fun nextLevel() {
-        startLevel(_gameState.value.currentLevel + 1)
+        startLevel(_gameState.value.currentLevel + 1, _gameState.value.difficulty)
     }
 
     override fun onCleared() {

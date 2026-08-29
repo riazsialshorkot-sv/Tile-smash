@@ -9,9 +9,11 @@ data class FloatingScore(
 )
 
 data class GameState(
+    val screen: AppScreen = AppScreen.START,
+    val difficulty: DifficultyMode = DifficultyMode.NORMAL,
     val board: List<List<Tile?>> = emptyList(),
     val score: Int = 0,
-    val movesRemaining: Int = 30,
+    val movesRemaining: Int = 26,
     val currentLevel: Int = 1,
     val targetScore: Int = 1000,
     val comboCount: Int = 0,

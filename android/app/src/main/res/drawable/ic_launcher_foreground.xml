@@ -3,11 +3,28 @@
     android:height="108dp"
     android:viewportWidth="108"
     android:viewportHeight="108">
-    <!-- Gem Star Logo -->
+    <!-- Outer Glow & Crown -->
     <path
         android:fillColor="#F59E0B"
-        android:pathData="M54,22L62,44L85,47L68,63L73,86L54,74L35,86L40,63L23,47L46,44Z" />
+        android:pathData="M54,20L78,38L69,82L39,82L30,38Z" />
+    <!-- Center Diamond Crystal -->
+    <path
+        android:fillColor="#F43F5E"
+        android:pathData="M54,24L74,40L54,80L34,40Z" />
+    <!-- Facet Top -->
     <path
         android:fillColor="#FDE68A"
-        android:pathData="M54,30L60,46L76,48L64,60L67,76L54,68L41,76L44,60L32,48L48,46Z" />
+        android:pathData="M54,24L64,36L44,36Z" />
+    <!-- Facet Left -->
+    <path
+        android:fillColor="#38BDF8"
+        android:pathData="M34,40L44,36L54,54Z" />
+    <!-- Facet Right -->
+    <path
+        android:fillColor="#818CF8"
+        android:pathData="M74,40L64,36L54,54Z" />
+    <!-- Facet Bottom Sparkle -->
+    <path
+        android:fillColor="#FFFFFF"
+        android:pathData="M54,54L58,46L54,38L50,46Z" />
 </vector>
